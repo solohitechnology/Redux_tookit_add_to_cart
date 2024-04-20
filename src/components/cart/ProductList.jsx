@@ -9,28 +9,27 @@ import {
   clearCart,
 } from './CartSlice';
 import { Link } from 'react-router-dom';
-import axios from 'axios'; // Import Axios for making HTTP requests
+import axios from 'axios'; 
 import "./product.css";
 
 const ProductList = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
-  const [products, setProducts] = useState([]); // State to store products
+  const [products, setProducts] = useState([]); 
   const [isCartVisible, setCartVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [productsPerPage] = useState(6); // Change the number of products per page as needed
+  const [productsPerPage] = useState(6); 
 
   useEffect(() => {
-    // Fetch products when the component mounts
     fetchProducts();
   }, []);
 
-  // Function to fetch products from the API
+  
   const fetchProducts = async () => {
     try {
       const response = await axios.get('https://fakestoreapi.com/products');
       console.log(response)
-      setProducts(response.data); // Set products state with the fetched data
+      setProducts(response.data); 
     } catch (error) {
       console.error('Error fetching products:', error);
     }
