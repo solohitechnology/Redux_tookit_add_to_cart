@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import PaystackPayment from '../payment/Payment';
 import {
   addToCart,
   removeFromCart,
@@ -8,27 +9,32 @@ import {
   clearCart,
 } from './CartSlice';
 import { Link } from 'react-router-dom';
-import "./product.css"
-
-const products = [
-  { id: 1, name: 'Product 1', price: 10 },
-  { id: 2, name: 'Product 2', price: 20 },
-  { id: 3, name: 'Product 3', price: 30 },
-];
+import axios from 'axios'; // Import Axios for making HTTP requests
+import "./product.css";
 
 const ProductList = () => {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
+  const [products, setProducts] = useState([]); // State to store products
   const [isCartVisible, setCartVisible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [productsPerPage] = useState(6); // Change the number of products per page as needed
 
   useEffect(() => {
-    if (cartItems.length === 0) {
-      const storedCartItems = localStorage.getItem('cartItems');
-      if (storedCartItems) {
-        dispatch(addToCart(JSON.parse(storedCartItems)));
-      }
-    }
+    // Fetch products when the component mounts
+    fetchProducts();
   }, []);
+
+  // Function to fetch products from the API
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('https://fakestoreapi.com/products');
+      console.log(response)
+      setProducts(response.data); // Set products state with the fetched data
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
 
   const handleAddToCart = (product) => {
     dispatch(addToCart({ product, quantity: 1 }));
@@ -60,18 +66,41 @@ const ProductList = () => {
     setCartVisible(!isCartVisible);
   };
 
+  // Pagination logic
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div>
       <h2>Products</h2>
-      {products.map((product) => (
-        <div key={product.id}>
-          <p>{product.name}</p>
-          <p>${product.price}</p>
-          <button onClick={() => handleAddToCart(product)}>Add to Cart</button>
-        </div>
-      ))}
+      <div className="product-container" style={{
+       display:"flex",
+       flexWrap:"wrap",
+       justifyContent:"space-around"
+      }}
+      >
+        {currentProducts.map((product) => (
+          <div key={product.id} className="product-item">
+            <img src={product.image} style={{ width: "100px", height:"100px" }} alt="" />
+            <div className="product-info">
+            <p className="product-title">{product.title.length > 20 ? `${product.title.substring(0, 20)}...` : product.title}</p>
+
+              <p>${product.price}</p>
+            </div>
+            <button style={{background:"#80bf91", padding:"5px", border:"none", cursor:"pointer" }} onClick={() => handleAddToCart(product)}>Add to Cart</button>
+          </div>
+        ))}
+      </div>
+      <div className="pagination" style={{display:"flex", justifyContent:"space-around", maxWidth:"150px", marginTop:"20px"}}>
+        {Array.from({ length: Math.ceil(products.length / productsPerPage) }).map((_, index) => (
+          <button key={index} onClick={() => paginate(index + 1)}>{index + 1}</button>
+        ))}
+      </div>
       <div className="cart-icon" onClick={handleToggleCart}>
-        <span className="cart-count">{cartItemCount}</span>
+        {cartItemCount > 0 && <span className="cart-count">{cartItemCount}</span>}
         <i className="fas fa-shopping-cart"></i>
       </div>
       {isCartVisible && (
@@ -93,10 +122,8 @@ const ProductList = () => {
                   </div>
                 ))}
                 <p>Total Price: ${getTotalPrice()}</p>
-                <Link to="/checkout">
-                  <button className="checkout-button">Checkout</button>
-                </Link>
-                <button onClick={handleClearCart}>Clear Cart</button>
+                   <PaystackPayment />
+                <button style={{marginTop:"10px"}} onClick={handleClearCart}>Clear Cart</button>
               </>
             ) : (
               <p>No items in the cart</p>
