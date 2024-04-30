@@ -74,7 +74,11 @@ const ProductList = () => {
 
   return (
     <div>
-      <h2>Products</h2>
+      <div style={{display:"flex", alignItems:"center"}}>
+      <img src="/shopping-logo.svg" style={{ width: "50px", height: "50px", margin:"10px" }} alt="" />
+      <h2 style={{fontFamily:"cursive", fontSize:"0.7rem", marginLeft:"-8px",marginTop:"20px"}} >Shopping Queens</h2>
+      </div>
+
       <div className="product-container" style={{
         display: "flex",
         flexWrap: "wrap",
